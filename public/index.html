@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.io Tutorial</title>
+    <style>
+        p {
+            font-size: 18px;
+            font-weight: bold;
+            font-style: italic;
+        }
+        div#messages {
+            margin: 20px;
+        }
+        div#Error {
+            color: red;
+            margin: 20px;
+        }
+        button {
+            padding: 11px;
+            color: white;
+            background-color: steelblue;
+            min-width: 120px;
+        }
+        input {
+            margin: 10px;
+            padding: 12px;
+        }
+        span {
+            font-size: 14px;
+            font-style: italic;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="Error"></div>
+ 
+    <div id="setName"></div>
+    <div id="getName" style="display: block;"><input id="name-input" type="text" placeholder="Nick name">
+    <button id="name-button">Send</button></div>
+    <input id="message-input" type="text" placeholder="Type your message here">
+    <button id="send-button">Submit</button>
+
+    <div id="messages"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      socket.on('connect', () => {
+        console.log('Connected to server');
+      });
+      socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+      });
+      const setName = document.getElementById('setName');
+      const getName = document.getElementById("getName");
+
+      const messages = document.getElementById('messages');
+      const messageInput = document.getElementById('message-input');
+      const sendButton = document.getElementById('send-button');
+
+      const names = document.getElementById('names');
+      const nameInput = document.getElementById('name-input');
+      const nameButton = document.getElementById('name-button');
+
+      sendButton.addEventListener('click', () => {
+        var errorDiv = document.getElementById('Error');
+        if(nameInput.value=='' || getName.style.display == 'block'){
+            errorDiv.innerHTML = 'Please add a name first';
+        }
+        else {
+            const message = messageInput.value;
+            const name = nameInput.value;
+            socket.emit('name', name);
+            socket.emit('message', message);
+            messageInput.value = '';
+        }
+      });
+      nameButton.addEventListener('click', () => {
+        var errorDiv = document.getElementById('Error');
+        if(nameInput.value==''){
+            errorDiv.innerHTML = 'Please add a name first';
+        }
+        else {
+            const name = nameInput.value;
+            errorDiv.innerHTML = '';
+            setName.innerHTML = '<h2> Username :'+name+'<h2>';
+            document.getElementById("getName").style.display="none";
+        }
+      });
+
+      socket.on('name', (name)=>{
+        const nameElement = document.createElement('p');
+        nameElement.innerText = name;
+        messages.appendChild(nameElement);
+      });
+
+      socket.on('message', (message) => {
+        const d = new Date();
+        let dateTime = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+' '+d.getHours()+':'+d.getMinutes()+':'+d.getSeconds();
+        const messageElement = document.createElement('div');
+        messageElement.innerText = message;
+        const spanElement = document.createElement('span');
+        spanElement.innerText+= dateTime;
+        messages.appendChild(messageElement);
+        messages.appendChild(spanElement);
+
+      });
+    </script>
+  </body>
+</html>
